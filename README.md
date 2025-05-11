@@ -1,6 +1,6 @@
 # Azure Kubernetes Service (AKS) Terraform Deployment
 
-This project uses Terraform to provision an Azure Kubernetes Service (AKS) cluster, along with an Azure Container Registry (ACR), and necessary role assignments for seamless Docker image pulls.
+This Terraform project provisions an Azure Kubernetes Service (AKS) cluster and an Azure Container Registry (ACR), and connects them through role assignments to allow seamless Docker image pulls from ACR into AKS.
 
 ---
 
@@ -10,68 +10,106 @@ This project uses Terraform to provision an Azure Kubernetes Service (AKS) clust
 - **Resource Group**
 - **Azure Container Registry (ACR)**
 - **Azure Kubernetes Service (AKS)**
-- **Role Assignment** to allow AKS to pull from ACR
-- **Kubeconfig** output to enable `kubectl` CLI access
+- **Role Assignment** to allow AKS to pull images from ACR
+- **Kubeconfig** file (to enable local `kubectl` access to AKS)
 
 ---
 
-## 📂 Project Structure
+## 📁 Project Structure
 
 | File | Description |
 |------|-------------|
-| `main.tf` | Core infrastructure definitions |
-| `variables.tf` | Declares variables used in the deployment |
-| `terraform.tfvars` | Assigns values to input variables |
-| `outputs.tf` | Outputs for use after provisioning (e.g., FQDN, kubeconfig) |
+| `main.tf` | Core infrastructure definition |
+| `variables.tf` | Input variable declarations |
+| `terraform.tfvars` | Actual values assigned to variables |
+| `outputs.tf` | Output values after deployment |
 | `provider.tf` | Azure provider configuration |
 
 ---
 
+## ⚙️ Prerequisites
 
+Ensure you have the following installed and set up:
+- [Terraform](https://developer.hashicorp.com/terraform/downloads) v1.3+
+- [Azure CLI](https://learn.microsoft.com/en-us/cli/azure/install-azure-cli)
+- An Azure Subscription
 
-## 🚀 How to Deploy
+---
 
-1. **Initialize Terraform:**
-   ```bash
-   terraform init
-   ```
+## 🚀 Step-by-Step Deployment Instructions
 
-2. **Preview the changes:**
-   ```bash
-   terraform plan
-   ```
+### Step 1: Clone the Repository
 
-3. **Apply the configuration:**
-   ```bash
-   terraform apply
-   ```
+```bash
+git clone https://github.com/your-username/your-repo-name.git
+cd your-repo-name
+```
+
+### Step 2: Authenticate with Azure
+
+```bash
+az login
+```
+
+(Optional if using multiple subscriptions):
+
+```bash
+az account set --subscription "<your-subscription-id>"
+```
+
+### Step 3: Initialize Terraform
+
+```bash
+terraform init
+```
+
+This will initialize the working directory and download the required providers.
+
+### Step 4: Review the Execution Plan
+
+```bash
+terraform plan
+```
+
+This allows you to verify the resources that will be created before applying.
+
+### Step 5: Apply the Configuration
+
+```bash
+terraform apply
+```
+
+Type `yes` when prompted to proceed.
 
 ---
 
 ## 📤 Outputs
 
-After deployment, Terraform will provide:
-
-- AKS Cluster ID
-- AKS FQDN
-- AKS Node Resource Group
-- ACR ID
-- ACR Login Server
-- Kubeconfig (written to local `kubeconfig` file)
-
----
-
-## 🔐 Security Notes
-
-- ACR `admin_enabled` is set to `false` for security.
-- AKS uses **system-assigned managed identity** for authentication.
-- Role assignment uses the `AcrPull` role to allow AKS to pull images securely.
+After a successful deployment, Terraform will display:
+- `aks_id` – The unique ID of the AKS cluster
+- `aks_fqdn` – The fully qualified domain name of the AKS cluster
+- `aks_node_rg` – The resource group where AKS node pools are provisioned
+- `acr_id` – The Azure Container Registry ID
+- `acr_login_server` – ACR server address used for image pulls
+- A `kubeconfig` file generated locally for interacting with the AKS cluster
 
 ---
 
-## ✅ Requirements
+## ✅ Post-Deployment: Access AKS with kubectl
 
-- Azure CLI authenticated session
-- Terraform v1.3+ (compatible with `azurerm` provider 4.14.0)
-- Azure subscription access with rights to create resources
+After deployment, use the generated `kubeconfig` file to access your cluster:
 
+```bash
+export KUBECONFIG=./kubeconfig
+kubectl get nodes
+```
+
+---
+
+## 🔐 Security Best Practices
+
+- ACR `admin_enabled` is set to `false` to prevent unauthorized access.
+- AKS uses **System-Assigned Managed Identity**.
+- Role assignment uses `AcrPull` for scoped permissions.
+
+---
